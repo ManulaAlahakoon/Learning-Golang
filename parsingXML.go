@@ -2,7 +2,7 @@ package main
 
 import ("fmt"
 "net/http"
-"io/ioutil"
+"io"
 "encoding/xml")
 
 type UrlIndex struct {
@@ -19,14 +19,22 @@ type Title struct {
 	Ti string `xml:",Cdata"`
 }
 
+func (L Location) String() string {
+	return fmt.Sprintf(L.Loc)
+}
+
 func main() {
 	resp, _ := http.Get("https://www.washingtonpost.com/news-world-sitemap.xml")
-	bytes, _ := ioutil.ReadAll(resp.Body)
+	bytes, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 
 	var s UrlIndex
 	xml.Unmarshal(bytes,&s)
 
-	fmt.Println(s.Locations)
+	//fmt.Println(s.Locations)
 	//fmt.Println(s.Titles)
+
+	fmt.Println(s.Locations)
+
+	
 }
