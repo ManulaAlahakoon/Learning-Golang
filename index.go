@@ -42,7 +42,7 @@ func newsAggHandler(w http.ResponseWriter, r *http.Request){
 		news_map[n.Titles[idx]] = NewsMap{n.Dates[idx],n.Locations[idx]}
 	}
 
-	p := NewsAggPage{Title: "All Around - A2 News", News: news_map}
+	p := NewsAggPage{Title: "News aggregator", News: news_map}
 	t, _ := template.ParseFiles("basicTemplating.html")
 	t.Execute(w,p)
 
