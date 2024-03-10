@@ -3,18 +3,33 @@ package main
 import (
 	"time"
 	"fmt"
+	"sync"
 )
+
+var wg sync.WaitGroup
 
 func say(s string) {
 	for i := 0; i < 3; i++ {
 		fmt.Println(s)
 		time.Sleep(time.Millisecond*100)
 	}
+	wg.Done()
 }
 
 func main() {
+	
+	//First collection of goroutines
+	wg.Add(1)
 	go say("Hi")
-	say("Manula")
+	wg.Add(1)
+	go say("Manula")
+	wg.Wait()
 
-	time.Sleep(time.Second)
+	//Second collection of goroutines
+	wg.Add(1)
+	go say("Mother is making dinner")
+	wg.Add(1)
+	go say("My wife is beautiful")
+	wg.Wait()
+
 }
