@@ -1,8 +1,15 @@
+<head>
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.2/css/dataTables.dataTables.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.2/js/dataTables.js"></script>
+</head>
 
-<h1>Xscience Magazine</h1>
-<h3>{{.Title}}</h3>
+<!--<h1>Xscience Magazine</h1>-->
+<h1>{{.Title}}</h1>
+<p>All around the world...</p>
 
-<table>
+<table id="myTable" class="display"
+>
     <thead>
         <th>Title</th>
         <th>Date</th>
@@ -16,4 +23,10 @@
         {{end}}
     </tbody>
 </table>
+
+<script>
+    $(document).ready(function () {
+        $('#myTable').DataTable();
+    });
+</script>
 
