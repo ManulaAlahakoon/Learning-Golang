@@ -1,3 +1,19 @@
+
 <h1>Xscience Magazine</h1>
 <h3>{{.Title}}</h3>
-<p>{{.News}}</p>
+
+<table>
+    <thead>
+        <th>Title</th>
+        <th>Date</th>
+    </thead>
+    <tbody>
+        {{range $key, $value := .News}}
+        <tr>
+            <td><a href="{{$value.Location}}" target="_blank">{{$key}}</a></td>
+            <td>{{$value.Date}}</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+
