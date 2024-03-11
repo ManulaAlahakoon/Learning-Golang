@@ -1,24 +1,31 @@
+
 package main
 
-import ("fmt"
-"net/http"
-"io"
-"encoding/xml"
-"html/template"
+import (
+	"encoding/xml"
+	"fmt"
+	"html/template"
+	"io"
+	"net/http"
+	"sync"
 )
+
 /*
 type Sitemapindex struct {
 	Locations []string `xml:"url>loc"`
 }
 */
+
+var wg sync.WaitGroup
+
 type News struct {
-	Titles []string `xml:"url>news>title"`
-	Dates []string `xml:"url>news>publication_date"`
+	Titles    []string `xml:"url>news>title"`
+	Dates     []string `xml:"url>news>publication_date"`
 	Locations []string `xml:"url>loc"`
 }
 
 type NewsMap struct {
-	Date string
+	Date     string
 	Location string
 }
 
@@ -28,35 +35,59 @@ type NewsAggPage struct {
 	News map[string]NewsMap
 }
 
-func newsAggHandler(w http.ResponseWriter, r *http.Request){
+func newsAggHandler(w http.ResponseWriter, r *http.Request) {
 
-	var n News
 	news_map := make(map[string]NewsMap)
 
-	resp, _ := http.Get("https://www.washingtonpost.com/news-world-sitemap.xml")
-	bytes, _ := io.ReadAll(resp.Body)
+    //// Replace if you want
+	channel := make(chan News, 1)
+	wg.Add(1)
+	go newsRoutine(channel)
+	wg.Wait()
+	close(channel)
 
-	xml.Unmarshal(bytes, &n)
-	
-	for idx,_ := range n.Locations{
-		news_map[n.Titles[idx]] = NewsMap{n.Dates[idx],n.Locations[idx]}
+	for elem := range channel {
+	for idx, _ := range elem.Locations {
+		///Speep Mapping
+		//wg.Add(1)
+		//go speedMapping(news_map,elem,idx)
+		news_map[elem.Titles[idx]] = NewsMap{elem.Dates[idx], elem.Locations[idx]}
+		}
 	}
-
+		wg.Wait()
 	p := NewsAggPage{Title: "News aggregator", News: news_map}
 	t, _ := template.ParseFiles("basicTemplating.html")
-	t.Execute(w,p)
+	t.Execute(w, p)
 
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request){
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "<h1>Let's go</h1>")
 }
 
+func newsRoutine(c chan News) {
+	defer wg.Done()
+	var n News
+	resp, _ := http.Get("https://www.washingtonpost.com/news-world-sitemap.xml")
+	bytes, _ := io.ReadAll(resp.Body)
+	xml.Unmarshal(bytes, &n)
+	resp.Body.Close()
 
+	c <- n
+}
+/*
+func speedMapping(news_map map[string]NewsMap,elem News, idx int) {
+	defer wg.Done()
+	
+	news_map[elem.Titles[idx]] = NewsMap{elem.Dates[idx], elem.Locations[idx]}
+}
+*/
 func main() {
 	//var s Sitemapindex
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/agg/", newsAggHandler)
-	http.ListenAndServe(":8000",nil)
+	http.ListenAndServe(":8000", nil)
 
 }
+
+
